@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بيتزا بينو | Pizza Pino</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Reem+Kufi+Ink&family=Tajawal:wght@300;400;500;700&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paper': '#F5F1E8',
+                        'ink': '#2C2416',
+                        'ink-light': '#5C4A32',
+                        'accent-red': '#D94F3D',
+                        'accent-green': '#6B8E4E',
+                        'accent-yellow': '#F4B942',
+                    },
+                    fontFamily: {
+                        'arabic': ['Reem Kufi Ink', 'cursive'],
+                        'title': ['Lalezar', 'cursive'],
+                        'hand': ['Caveat', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * { font-family: 'Tajawal', sans-serif; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            background-color: #F5F1E8;
+            background-image: linear-gradient(#E8E0D0 1px, transparent 1px);
+            background-size: 100% 32px;
+        }
+        
+        .sketch-title { font-family: 'Lalezar', cursive; }
+        .sketch-text { font-family: 'Reem Kufi Ink', cursive; }
+        .hand-text { font-family: 'Caveat', cursive; }
+        
+        .wavy-underline {
+            position: relative;
+            display: inline-block;
+        }
+        .wavy-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: 0;
+            width: 100%;
+            height: 6px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 6'%3E%3Cpath d='M0 3 Q 12.5 0 25 3 T 50 3 T 75 3 T 100 3' stroke='%23D94F3D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-size: 40px 6px;
+            background-repeat: repeat-x;
+        }
+        
+        .sketch-card {
+            background: #F5F1E8;
+            border: 2.5px solid #2C2416;
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+            transition: all 0.4s ease;
+        }
+        .sketch-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 6px 6px 0 #2C2416;
+        }
+        
+        .sketch-btn {
+            border: 2.5px solid #2C2416;
+            padding: 12px 28px;
+            font-family: 'Lalezar', cursive;
+            font-size: 1.1rem;
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+            transition: all 0.3s;
+        }
+        .sketch-btn:hover {
+            background: #2C2416;
+            color: #F5F1E8;
+            transform: translateY(-2px);
+        }
+        .sketch-btn-filled {
+            background: #D94F3D;
+            color: #F5F1E8;
+            border-color: #D94F3D;
+        }
+        
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 3px;
+            background: #D94F3D;
+            z-index: 9999;
+            transition: width 0.1s;
+        }
+        
+        .wavy-divider {
+            width: 100%;
+            height: 30px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 30' preserveAspectRatio='none'%3E%3Cpath d='M0 15 Q 100 5 200 15 T 400 15 T 600 15 T 800 15 T 1000 15 T 1200 15' stroke='%232C2416' stroke-width='2' fill='none' stroke-linecap='round' stroke-dasharray='6,3'/%3E%3C/svg%3E");
+        }
+        
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #F5F1E8; }
+        ::-webkit-scrollbar-thumb { background: #2C2416; border-radius: 10px; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-anim { animation: float 4s ease-in-out infinite; }
+        
+        .draw-anim {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 2.5s ease-in-out forwards;
+        }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        
+        @keyframes load { to { width: 100%; } }
+        
+        .heart-beat { animation: heartbeat 1.5s ease-in-out infinite; }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <div class="scroll-indicator" id="scrollProgress"></div>
+
+    <!-- Loading -->
+    <div id="loader" class="fixed inset-0 bg-paper flex items-center justify-center z-[10000]">
+        <div class="text-center">
+            <svg viewBox="0 0 200 200" class="w-40 h-40 mx-auto">
+                <circle cx="100" cy="100" r="80" fill="none" stroke="#2C2416" stroke-width="3" class="draw-anim"/>
+                <circle cx="100" cy="100" r="65" fill="none" stroke="#D94F3D" stroke-width="2" class="draw-anim" style="animation-delay: 0.4s"/>
+                <circle cx="70" cy="75" r="12" fill="#D94F3D" class="draw-anim" style="animation-delay: 0.8s"/>
+                <circle cx="130" cy="80" r="12" fill="#D94F3D" class="draw-anim" style="animation-delay: 1s"/>
+                <circle cx="75" cy="125" r="12" fill="#D94F3D" class="draw-anim" style="animation-delay: 1.2s"/>
+                <circle cx="125" cy="120" r="12" fill="#D94F3D" class="draw-anim" style="animation-delay: 1.4s"/>
+                <circle cx="100" cy="100" r="10" fill="#6B8E4E" class="draw-anim" style="animation-delay: 1.6s"/>
+            </svg>
+            <h2 class="sketch-title text-4xl text-ink mt-4">بيتزا بينو</h2>
+            <p class="hand-text text-xl text-ink-light mt-2">...جاري الرسم</p>
+            <div class="w-40 h-1 bg-gray-300 mx-auto mt-4 rounded-full overflow-hidden">
+                <div class="h-full bg-accent-red rounded-full" style="animation: load 2.5s ease-out forwards; width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-paper/95 backdrop-blur-md border-b-2 border-ink py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <svg width="45" height="45" viewBox="0 0 50 50" class="float-anim">
+                    <circle cx="25" cy="25" r="20" fill="none" stroke="#2C2416" stroke-width="2.5"/>
+                    <circle cx="25" cy="25" r="16" fill="#D94F3D" opacity="0.3"/>
+                    <circle cx="18" cy="20" r="3" fill="#D94F3D"/>
+                    <circle cx="32" cy="22" r="3" fill="#D94F3D"/>
+                    <circle cx="22" cy="32" r="3" fill="#D94F3D"/>
+                    <circle cx="25" cy="25" r="2.5" fill="#6B8E4E"/>
+                </svg>
+                <div>
+                    <h1 class="sketch-title text-2xl text-ink">بيتزا <span class="text-accent-red">بينو</span></h1>
+                    <p class="hand-text text-sm text-ink-light -mt-1">Pizza Pino - 2014</p>
+                </div>
+            </div>
+            
+            <ul class="hidden md:flex gap-8 text-ink font-bold">
+                <li><a href="#home" class="hover:text-accent-red transition">الرئيسية</a></li>
+                <li><a href="#about" class="hover:text-accent-red transition">قصتنا</a></li>
+                <li><a href="#menu" class="hover:text-accent-red transition">القائمة</a></li>
+                <li><a href="#features" class="hover:text-accent-red transition">مميزاتنا</a></li>
+                <li><a href="#contact" class="hover:text-accent-red transition">تواصل</a></li>
+            </ul>
+            
+            <div class="flex gap-2">
+                <a href="#" class="w-10 h-10 rounded-full border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" class="w-10 h-10 rounded-full border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition">
+                    <i class="fab fa-twitter"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section id="home" class="min-h-screen flex items-center pt-24 pb-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-block bg-accent-yellow/40 px-5 py-2 rounded-full border-2 border-ink mb-6 transform -rotate-1">
+                        <p class="hand-text text-ink text-lg font-bold">ملاحظة: أطيب بيتزا في الرياض!</p>
+                    </div>
+                    
+                    <h1 class="sketch-title text-6xl md:text-8xl text-ink mb-4 leading-tight">
+                        هلا والله!
+                    </h1>
+                    
+                    <h2 class="sketch-text text-4xl md:text-6xl text-ink mb-6">
+                        في <span class="wavy-underline text-accent-red">بيتزا بينو</span>
+                    </h2>
+                    
+                    <p class="arabic text-xl text-ink-light mb-8 leading-relaxed max-w-lg">
+                        تدلل يا الغالي! عندنا أطيب بيتزا إيطالية بلمسة سعودية. عجينة طازجة، مكونات فاخرة، وحب في كل قطعة. وش رايك تجرب؟
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-4 mb-8">
+                        <a href="#menu" class="sketch-btn sketch-btn-filled inline-flex items-center gap-2">
+                            <span>شوف القائمة</span>
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <a href="#about" class="sketch-btn inline-flex items-center gap-2">
+                            <span>تعرف علينا</span>
+                            <i class="fas fa-heart text-accent-red"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="flex gap-8 pt-6 border-t-2 border-dashed border-ink/30">
+                        <div class="text-center">
+                            <div class="sketch-title text-4xl text-accent-red counter" data-target="15">0</div>
+                            <p class="hand-text text-ink-light text-lg">نوع بيتزا</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="sketch-title text-4xl text-accent-red counter" data-target="10">0</div>
+                            <p class="hand-text text-ink-light text-lg">سنوات خبرة</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="sketch-title text-4xl text-accent-red">5<i class="fas fa-star text-2xl"></i></div>
+                            <p class="hand-text text-ink-light text-lg">تقييم العملاء</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <div class="float-anim">
+                        <svg viewBox="0 0 400 400" class="w-full max-w-md mx-auto">
+                            <ellipse cx="200" cy="340" rx="160" ry="30" fill="none" stroke="#2C2416" stroke-width="2" stroke-dasharray="6,3"/>
+                            <circle cx="200" cy="220" r="160" fill="#F4B942" opacity="0.3" stroke="#2C2416" stroke-width="3"/>
+                            <circle cx="200" cy="220" r="145" fill="#F4B942" opacity="0.5" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="200" cy="220" r="130" fill="#F4B942" opacity="0.6"/>
+                            <ellipse cx="150" cy="180" rx="40" ry="30" fill="#D94F3D" opacity="0.7" stroke="#2C2416" stroke-width="1.5"/>
+                            <ellipse cx="250" cy="200" rx="45" ry="35" fill="#D94F3D" opacity="0.7" stroke="#2C2416" stroke-width="1.5"/>
+                            <ellipse cx="200" cy="260" rx="42" ry="32" fill="#D94F3D" opacity="0.7" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="130" cy="170" r="22" fill="#D94F3D" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="270" cy="190" r="22" fill="#D94F3D" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="140" cy="260" r="22" fill="#D94F3D" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="260" cy="250" r="22" fill="#D94F3D" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="200" cy="210" r="22" fill="#D94F3D" stroke="#2C2416" stroke-width="2"/>
+                            <path d="M170 150 Q160 140 170 130 Q180 140 170 150" fill="#6B8E4E" stroke="#2C2416" stroke-width="1.5"/>
+                            <path d="M230 230 Q220 220 230 210 Q240 220 230 230" fill="#6B8E4E" stroke="#2C2416" stroke-width="1.5"/>
+                            <path d="M190 140 Q180 130 190 120 Q200 130 190 140" fill="#6B8E4E" stroke="#2C2416" stroke-width="1.5"/>
+                            <path d="M150 80 Q155 65 150 50" fill="none" stroke="#5C4A32" stroke-width="2" stroke-linecap="round" class="float-anim"/>
+                            <path d="M200 70 Q205 55 200 40" fill="none" stroke="#5C4A32" stroke-width="2" stroke-linecap="round" class="float-anim" style="animation-delay: 1s"/>
+                            <path d="M250 80 Q255 65 250 50" fill="none" stroke="#5C4A32" stroke-width="2" stroke-linecap="round" class="float-anim" style="animation-delay: 2s"/>
+                        </svg>
+                    </div>
+                    
+                    <div class="absolute top-10 right-0 bg-accent-red text-paper px-4 py-3 rounded-full border-2 border-ink transform rotate-6 hidden md:block">
+                        <p class="hand-text text-lg font-bold">طازج يومياً</p>
+                        <p class="hand-text text-sm"><i class="fas fa-leaf text-xs"></i> مكونات طبيعية</p>
+                    </div>
+                    
+                    <div class="absolute bottom-20 left-0 bg-accent-green text-paper px-4 py-3 rounded-full border-2 border-ink transform -rotate-3 hidden md:block">
+                        <p class="hand-text text-lg font-bold">فرن حطب</p>
+                        <p class="hand-text text-sm"><i class="fas fa-fire text-xs"></i> تقليدي إيطالي</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="wavy-divider"></div>
+
+    <!-- About -->
+    <section id="about" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="relative">
+                    <svg viewBox="0 0 400 400" class="w-full">
+                        <circle cx="200" cy="200" r="180" fill="none" stroke="#2C2416" stroke-width="2" stroke-dasharray="8,4" opacity="0.3"/>
+                        <ellipse cx="200" cy="320" rx="60" ry="80" fill="#F5F1E8" stroke="#2C2416" stroke-width="2.5"/>
+                        <rect x="150" y="240" width="100" height="120" rx="10" fill="#F5F1E8" stroke="#2C2416" stroke-width="2.5"/>
+                        <path d="M 150 160 Q 150 100 200 100 Q 250 100 250 160 L 250 200 L 150 200 Z" fill="#F5F1E8" stroke="#2C2416" stroke-width="2.5"/>
+                        <ellipse cx="200" cy="200" rx="55" ry="12" fill="#F5F1E8" stroke="#2C2416" stroke-width="2.5"/>
+                        <ellipse cx="200" cy="230" rx="40" ry="45" fill="#F4B942" opacity="0.3" stroke="#2C2416" stroke-width="2"/>
+                        <circle cx="185" cy="220" r="5" fill="#2C2416"/>
+                        <circle cx="215" cy="220" r="5" fill="#2C2416"/>
+                        <path d="M 185 245 Q 200 260 215 245" stroke="#2C2416" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        <path d="M 180 235 Q 190 230 200 235 Q 210 230 220 235" stroke="#2C2416" stroke-width="2" fill="none"/>
+                        <path d="M 150 270 Q 120 290 130 320" fill="none" stroke="#2C2416" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M 250 270 Q 280 290 270 320" fill="none" stroke="#2C2416" stroke-width="2.5" stroke-linecap="round"/>
+                        <ellipse cx="290" cy="310" rx="55" ry="35" fill="#F4B942" stroke="#2C2416" stroke-width="2" transform="rotate(-15 290 310)"/>
+                        <ellipse cx="290" cy="310" rx="42" ry="27" fill="#D94F3D" opacity="0.7" stroke="#2C2416" stroke-width="1.5" transform="rotate(-15 290 310)"/>
+                        <circle cx="275" cy="300" r="8" fill="#D94F3D" stroke="#2C2416" stroke-width="1"/>
+                        <circle cx="305" cy="315" r="8" fill="#D94F3D" stroke="#2C2416" stroke-width="1"/>
+                        <path d="M290 295 Q285 290 290 285 Q295 290 290 295" fill="#6B8E4E" stroke="#2C2416" stroke-width="1"/>
+                        <path d="M 100 100 C 100 90 110 90 110 100 C 110 90 120 90 120 100 C 120 115 110 125 110 125 C 110 125 100 115 100 100" fill="#D94F3D" stroke="#2C2416" stroke-width="1.5" class="heart-beat"/>
+                    </svg>
+                    
+                    <div class="absolute -bottom-4 -right-4 bg-accent-red text-paper w-32 h-32 rounded-full flex flex-col items-center justify-center border-4 border-ink transform rotate-12 shadow-lg">
+                        <span class="sketch-title text-4xl">10</span>
+                        <span class="hand-text text-sm font-bold">سنوات</span>
+                        <span class="hand-text text-xs">من التميز</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="inline-block bg-accent-yellow/30 px-4 py-2 rounded-full border-2 border-ink mb-4">
+                        <span class="hand-text text-ink text-xl font-bold">La Nostra Storia</span>
+                    </div>
+                    
+                    <h2 class="sketch-title text-5xl md:text-6xl text-ink mb-6">
+                        قصتنا <span class="text-accent-red wavy-underline">وشغفنا</span>
+                    </h2>
+                    
+                    <p class="arabic text-xl text-ink-light mb-4 leading-relaxed">
+                        يا هلا! قبل 10 سنوات، بدأنا رحلتنا بشغف كبير. نبي ننقل تجربة البيتزا الإيطالية الأصيلة للسعودية.
+                    </p>
+                    
+                    <p class="arabic text-xl text-ink-light mb-8 leading-relaxed">
+                        كل بيتزا عندنا تحكي قصة، ونبيك تكون جزء منها. نستخدم أفضل المكونات الطازجة، ونعجن العجينة يومياً بأيدي خبرائنا.
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="sketch-card p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-accent-red/20 rounded-full flex items-center justify-center border-2 border-ink">
+                                    <i class="fas fa-check text-accent-red text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="sketch-text text-xl text-ink font-bold">جودة عالية</h4>
+                                    <p class="hand-text text-ink-light">نختار بعناية</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sketch-card p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-accent-green/20 rounded-full flex items-center justify-center border-2 border-ink">
+                                    <i class="fas fa-heart text-accent-green text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="sketch-text text-xl text-ink font-bold">مصنوع بحب</h4>
+                                    <p class="hand-text text-ink-light">شغف في كل قطعة</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sketch-card p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-accent-yellow/30 rounded-full flex items-center justify-center border-2 border-ink">
+                                    <i class="fas fa-clock text-accent-yellow text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="sketch-text text-xl text-ink font-bold">طازج يومياً</h4>
+                                    <p class="hand-text text-ink-light">كل يوم جديد</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sketch-card p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-accent-red/20 rounded-full flex items-center justify-center border-2 border-ink">
+                                    <i class="fas fa-award text-accent-red text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="sketch-text text-xl text-ink font-bold">وصفات أصيلة</h4>
+                                    <p class="hand-text text-ink-light">تقليد إيطالي</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="wavy-divider" style="transform: scaleY(-1);"></div>
+
+    <!-- Menu -->
+    <section id="menu" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="inline-block bg-accent-green/20 px-6 py-2 rounded-full border-2 border-ink mb-4">
+                    <span class="hand-text text-ink text-2xl font-bold">Il Nostro Menu</span>
+                </div>
+                
+                <h2 class="sketch-title text-5xl md:text-7xl text-ink mb-4">
+                    أطباقنا <span class="text-accent-red wavy-underline">المميزة</span>
+                </h2>
+                
+                <p class="arabic text-xl text-ink-light max-w-2xl mx-auto">
+                    كل بيتزا تحكي قصة، تبي تشوف وش عندنا؟ تدلل!
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="sketch-card overflow-hidden group">
+                    <div class="h-64 bg-gradient-to-br from-accent-yellow/20 to-accent-red/10 flex items-center justify-center p-6 relative">
+                        <svg viewBox="0 0 200 200" class="w-48 h-48 group-hover:scale-110 transition duration-500">
+                            <circle cx="100" cy="100" r="85" fill="#F4B942" opacity="0.4" stroke="#2C2416" stroke-width="2.5"/>
+                            <circle cx="100" cy="100" r="70" fill="#F4B942" opacity="0.6" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="100" cy="100" r="60" fill="#D94F3D" opacity="0.5"/>
+                            <circle cx="75" cy="80" r="15" fill="#D94F3D" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="125" cy="85" r="15" fill="#D94F3D" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="80" cy="120" r="15" fill="#D94F3D" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="120" cy="115" r="15" fill="#D94F3D" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="100" cy="100" r="10" fill="#6B8E4E" stroke="#2C2416" stroke-width="1.5"/>
+                            <path d="M85 70 Q90 65 95 70 Q90 75 85 70" fill="#6B8E4E" stroke="#2C2416" stroke-width="1"/>
+                            <path d="M110 125 Q115 120 120 125 Q115 130 110 125" fill="#6B8E4E" stroke="#2C2416" stroke-width="1"/>
+                        </svg>
+                        <div class="absolute top-4 right-4 bg-accent-red text-paper px-3 py-1 rounded-full border-2 border-ink">
+                            <span class="hand-text font-bold">كلاسيك</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="sketch-text text-3xl text-ink font-bold">مارغريتا</h3>
+                            <span class="sketch-title text-2xl text-accent-red">35 ر.س</span>
+                        </div>
+                        <p class="arabic text-ink-light mb-3">الطماطم، الموزاريلا، الريحان الطازج</p>
+                        <div class="flex items-center gap-2 text-accent-green">
+                            <i class="fas fa-fire"></i>
+                            <span class="hand-text text-lg font-bold">فرن حطب تقليدي</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sketch-card overflow-hidden group">
+                    <div class="h-64 bg-gradient-to-br from-accent-red/20 to-accent-yellow/10 flex items-center justify-center p-6 relative">
+                        <svg viewBox="0 0 200 200" class="w-48 h-48 group-hover:scale-110 transition duration-500">
+                            <circle cx="100" cy="100" r="85" fill="#F4B942" opacity="0.4" stroke="#2C2416" stroke-width="2.5"/>
+                            <circle cx="100" cy="100" r="70" fill="#F4B942" opacity="0.6" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="100" cy="100" r="60" fill="#D94F3D" opacity="0.5"/>
+                            <circle cx="65" cy="80" r="18" fill="#8B0000" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="100" cy="65" r="18" fill="#8B0000" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="135" cy="80" r="18" fill="#8B0000" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="65" cy="115" r="18" fill="#8B0000" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="100" cy="130" r="18" fill="#8B0000" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="135" cy="115" r="18" fill="#8B0000" stroke="#2C2416" stroke-width="1.5"/>
+                            <path d="M85 95 Q100 110 115 95" stroke="#6B8E4E" stroke-width="2" fill="none"/>
+                        </svg>
+                        <div class="absolute top-4 right-4 bg-accent-red text-paper px-3 py-1 rounded-full border-2 border-ink">
+                            <span class="hand-text font-bold"><i class="fas fa-pepper-hot text-xs"></i> حار</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="sketch-text text-3xl text-ink font-bold">بيبروني</h3>
+                            <span class="sketch-title text-2xl text-accent-red">42 ر.س</span>
+                        </div>
+                        <p class="arabic text-ink-light mb-3">البيبروني الإيطالي، الموزاريلا، صلصة حارة</p>
+                        <div class="flex items-center gap-2 text-accent-red">
+                            <i class="fas fa-pepper-hot"></i>
+                            <span class="hand-text text-lg font-bold">حار ولذيذ</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sketch-card overflow-hidden group">
+                    <div class="h-64 bg-gradient-to-br from-accent-green/20 to-accent-yellow/10 flex items-center justify-center p-6 relative">
+                        <svg viewBox="0 0 200 200" class="w-48 h-48 group-hover:scale-110 transition duration-500">
+                            <circle cx="100" cy="100" r="85" fill="#F4B942" opacity="0.4" stroke="#2C2416" stroke-width="2.5"/>
+                            <circle cx="100" cy="100" r="70" fill="#F4B942" opacity="0.6" stroke="#2C2416" stroke-width="2"/>
+                            <circle cx="100" cy="100" r="60" fill="#D94F3D" opacity="0.5"/>
+                            <ellipse cx="70" cy="85" rx="20" ry="12" fill="#8B4513" stroke="#2C2416" stroke-width="1.5"/>
+                            <ellipse cx="130" cy="85" rx="20" ry="12" fill="#8B4513" stroke="#2C2416" stroke-width="1.5"/>
+                            <ellipse cx="70" cy="115" rx="20" ry="12" fill="#8B4513" stroke="#2C2416" stroke-width="1.5"/>
+                            <ellipse cx="130" cy="115" rx="20" ry="12" fill="#8B4513" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="100" cy="100" r="8" fill="#F4B942" stroke="#2C2416" stroke-width="1.5"/>
+                            <circle cx="85" cy="70" r="5" fill="#F4B942" stroke="#2C2416" stroke-width="1"/>
+                            <circle cx="115" cy="130" r="5" fill="#F4B942" stroke="#2C2416" stroke-width="1"/>
+                        </svg>
+                        <div class="absolute top-4 right-4 bg-accent-yellow text-ink px-3 py-1 rounded-full border-2 border-ink">
+                            <span class="hand-text font-bold"><i class="fas fa-star text-xs"></i> الأكثر مبيعاً</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="sketch-text text-3xl text-ink font-bold">بيتزا الشرق</h3>
+                            <span class="sketch-title text-2xl text-accent-red">48 ر.س</span>
+                        </div>
+                        <p class="arabic text-ink-light mb-3">لحم متبل، بصل مكرمل، صنوبر، سماق</p>
+                        <div class="flex items-center gap-2 text-accent-yellow">
+                            <i class="fas fa-star"></i>
+                            <span class="hand-text text-lg font-bold text-ink">الأكثر مبيعاً</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="wavy-divider"></div>
+
+    <!-- Features -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="inline-block bg-accent-red/20 px-6 py-2 rounded-full border-2 border-ink mb-4">
+                    <span class="hand-text text-ink text-2xl font-bold">Perché Noi</span>
+                </div>
+                
+                <h2 class="sketch-title text-5xl md:text-7xl text-ink mb-4">
+                    ليش <span class="text-accent-red wavy-underline">تختارنا؟</span>
+                </h2>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="sketch-card p-6 text-center">
+                    <div class="w-20 h-20 bg-accent-red/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-ink">
+                        <i class="fas fa-fire text-accent-red text-3xl"></i>
+                    </div>
+                    <h3 class="sketch-text text-2xl text-ink font-bold mb-2">فرن حطب</h3>
+                    <p class="hand-text text-ink-light text-lg">تقليدي إيطالي</p>
+                </div>
+                
+                <div class="sketch-card p-6 text-center">
+                    <div class="w-20 h-20 bg-accent-green/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-ink">
+                        <i class="fas fa-leaf text-accent-green text-3xl"></i>
+                    </div>
+                    <h3 class="sketch-text text-2xl text-ink font-bold mb-2">طازج يومياً</h3>
+                    <p class="hand-text text-ink-light text-lg">مكونات طبيعية</p>
+                </div>
+                
+                <div class="sketch-card p-6 text-center">
+                    <div class="w-20 h-20 bg-accent-yellow/30 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-ink">
+                        <i class="fas fa-clock text-accent-yellow text-3xl"></i>
+                    </div>
+                    <h3 class="sketch-text text-2xl text-ink font-bold mb-2">عجينة 48 ساعة</h3>
+                    <p class="hand-text text-ink-light text-lg">تخمير بطيء</p>
+                </div>
+                
+                <div class="sketch-card p-6 text-center">
+                    <div class="w-20 h-20 bg-accent-red/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-ink">
+                        <i class="fas fa-heart text-accent-red text-3xl"></i>
+                    </div>
+                    <h3 class="sketch-text text-2xl text-ink font-bold mb-2">مصنوع بحب</h3>
+                    <p class="hand-text text-ink-light text-lg">شغف وإتقان</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="wavy-divider" style="transform: scaleY(-1);"></div>
+
+    <!-- Testimonials -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="inline-block bg-accent-yellow/30 px-6 py-2 rounded-full border-2 border-ink mb-4">
+                    <span class="hand-text text-ink text-2xl font-bold">Testimonianze</span>
+                </div>
+                
+                <h2 class="sketch-title text-5xl md:text-7xl text-ink mb-4">
+                    وش يقولون <span class="text-accent-red wavy-underline">عملائنا؟</span>
+                </h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="sketch-card p-6">
+                    <div class="flex gap-1 text-accent-yellow mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="arabic text-ink-light text-lg mb-4 leading-relaxed">
+                        "والله ما ذقت بيتزا زي كذا! العجينة طازعة والمكونات فاخرة. صراحة تجربة رهيبة!"
+                    </p>
+                    <div class="flex items-center gap-3 pt-4 border-t-2 border-dashed border-ink/30">
+                        <div class="w-12 h-12 bg-accent-red/20 rounded-full flex items-center justify-center border-2 border-ink">
+                            <span class="sketch-text text-xl text-accent-red">م</span>
+                        </div>
+                        <div>
+                            <h4 class="sketch-text text-xl text-ink font-bold">محمد العتيبي</h4>
+                            <p class="hand-text text-ink-light">عميل مميز</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sketch-card p-6">
+                    <div class="flex gap-1 text-accent-yellow mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="arabic text-ink-light text-lg mb-4 leading-relaxed">
+                        "أجواء المطعم رهيبة والخدمة ممتازة. البيتزا طازعة ولذيذة جداً. أنصح فيها بقوة!"
+                    </p>
+                    <div class="flex items-center gap-3 pt-4 border-t-2 border-dashed border-ink/30">
+                        <div class="w-12 h-12 bg-accent-green/20 rounded-full flex items-center justify-center border-2 border-ink">
+                            <span class="sketch-text text-xl text-accent-green">س</span>
+                        </div>
+                        <div>
+                            <h4 class="sketch-text text-xl text-ink font-bold">سارة القحطاني</h4>
+                            <p class="hand-text text-ink-light">عميلة مميزة</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sketch-card p-6">
+                    <div class="flex gap-1 text-accent-yellow mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="arabic text-ink-light text-lg mb-4 leading-relaxed">
+                        "تجربة إيطالية أصيلة بلمسة سعودية. الفرن الحطب يفرق كثير في الطعم. حياكم الله!"
+                    </p>
+                    <div class="flex items-center gap-3 pt-4 border-t-2 border-dashed border-ink/30">
+                        <div class="w-12 h-12 bg-accent-yellow/30 rounded-full flex items-center justify-center border-2 border-ink">
+                            <span class="sketch-text text-xl text-accent-yellow">ف</span>
+                        </div>
+                        <div>
+                            <h4 class="sketch-text text-xl text-ink font-bold">فهد الدوسري</h4>
+                            <p class="hand-text text-ink-light">عميل مميز</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="wavy-divider"></div>
+
+    <!-- Contact -->
+    <section id="contact" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16">
+                <div>
+                    <div class="inline-block bg-accent-red/20 px-6 py-2 rounded-full border-2 border-ink mb-4">
+                        <span class="hand-text text-ink text-2xl font-bold">Contattaci</span>
+                    </div>
+                    
+                    <h2 class="sketch-title text-5xl md:text-6xl text-ink mb-6">
+                        تواصل <span class="text-accent-red wavy-underline">معنا</span>
+                    </h2>
+                    
+                    <p class="arabic text-xl text-ink-light mb-8 leading-relaxed">
+                        حياك الله! نحن هنا للإجابة على جميع استفساراتك. زُرنا في مطعمنا أو تواصل معنا. على راحتك!
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="sketch-card p-4 flex items-center gap-4">
+                            <div class="w-14 h-14 bg-accent-red/20 rounded-full flex items-center justify-center border-2 border-ink">
+                                <i class="fas fa-map-marker-alt text-accent-red text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="sketch-text text-xl text-ink font-bold">العنوان</h4>
+                                <p class="hand-text text-ink-light text-lg">الرياض، حي الملقا</p>
+                            </div>
+                        </div>
+                        
+                        <div class="sketch-card p-4 flex items-center gap-4">
+                            <div class="w-14 h-14 bg-accent-green/20 rounded-full flex items-center justify-center border-2 border-ink">
+                                <i class="fas fa-phone text-accent-green text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="sketch-text text-xl text-ink font-bold">الهاتف</h4>
+                                <p class="hand-text text-ink-light text-lg">920000000</p>
+                            </div>
+                        </div>
+                        
+                        <div class="sketch-card p-4 flex items-center gap-4">
+                            <div class="w-14 h-14 bg-accent-yellow/30 rounded-full flex items-center justify-center border-2 border-ink">
+                                <i class="fas fa-clock text-accent-yellow text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="sketch-text text-xl text-ink font-bold">ساعات العمل</h4>
+                                <p class="hand-text text-ink-light text-lg">السبت - الخميس: 12م - 12ص</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sketch-card p-8 flex items-center justify-center">
+                    <svg viewBox="0 0 300 300" class="w-full max-w-sm">
+                        <rect x="20" y="20" width="260" height="260" rx="15" fill="#F5F1E8" stroke="#2C2416" stroke-width="2.5"/>
+                        <line x1="50" y1="150" x2="250" y2="150" stroke="#2C2416" stroke-width="2" stroke-dasharray="6,3"/>
+                        <line x1="150" y1="50" x2="150" y2="250" stroke="#2C2416" stroke-width="2" stroke-dasharray="6,3"/>
+                        <rect x="60" y="80" width="40" height="35" rx="3" fill="#4A7C9B" opacity="0.3" stroke="#2C2416" stroke-width="1.5"/>
+                        <rect x="200" y="180" width="50" height="40" rx="3" fill="#6B8E4E" opacity="0.3" stroke="#2C2416" stroke-width="1.5"/>
+                        <rect x="180" y="70" width="35" height="30" rx="3" fill="#F4B942" opacity="0.4" stroke="#2C2416" stroke-width="1.5"/>
+                        <path d="M 150 130 C 150 110 165 100 165 120 C 165 135 150 150 150 150 C 150 150 135 135 135 120 C 135 100 150 110 150 130" fill="#D94F3D" stroke="#2C2416" stroke-width="2" class="float-anim"/>
+                        <circle cx="150" cy="120" r="6" fill="#F5F1E8" stroke="#2C2416" stroke-width="1.5"/>
+                        <circle cx="150" cy="130" r="50" fill="none" stroke="#D94F3D" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+                        <rect x="100" y="170" width="100" height="25" rx="5" fill="#2C2416"/>
+                        <text x="150" y="187" text-anchor="middle" fill="#F5F1E8" font-family="Lalezar" font-size="14">بيتزا بينو</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="wavy-divider" style="transform: scaleY(-1);"></div>
+
+    <!-- Footer -->
+    <footer class="py-16">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <svg width="45" height="45" viewBox="0 0 50 50" class="float-anim">
+                            <circle cx="25" cy="25" r="20" fill="none" stroke="#2C2416" stroke-width="2.5"/>
+                            <circle cx="25" cy="25" r="16" fill="#D94F3D" opacity="0.3"/>
+                            <circle cx="18" cy="20" r="3" fill="#D94F3D"/>
+                            <circle cx="32" cy="22" r="3" fill="#D94F3D"/>
+                            <circle cx="22" cy="32" r="3" fill="#D94F3D"/>
+                            <circle cx="25" cy="25" r="2.5" fill="#6B8E4E"/>
+                        </svg>
+                        <div>
+                            <h3 class="sketch-title text-3xl text-ink">بيتزا <span class="text-accent-red">بينو</span></h3>
+                            <p class="hand-text text-ink-light">Pizza Pino - 2014</p>
+                        </div>
+                    </div>
+                    <p class="arabic text-ink-light mb-6 max-w-md leading-relaxed">
+                        أصالة إيطالية بلمسة سعودية. نخبز الحب في كل قطعة. حياكم الله!
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <a href="#" class="sketch-card px-5 py-3 flex items-center gap-3">
+                            <i class="fab fa-google-play text-3xl text-accent-green"></i>
+                            <div>
+                                <p class="hand-text text-ink-light text-sm">احصل عليه من</p>
+                                <p class="sketch-text text-ink font-bold">Google Play</p>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="sketch-card px-5 py-3 flex items-center gap-3">
+                            <i class="fab fa-apple text-3xl text-ink"></i>
+                            <div>
+                                <p class="hand-text text-ink-light text-sm">متوفر على</p>
+                                <p class="sketch-text text-ink font-bold">App Store</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="sketch-text text-2xl text-ink font-bold mb-4">روابط سريعة</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="hand-text text-ink-light text-lg hover:text-accent-red transition">الرئيسية</a></li>
+                        <li><a href="#about" class="hand-text text-ink-light text-lg hover:text-accent-red transition">من نحن</a></li>
+                        <li><a href="#menu" class="hand-text text-ink-light text-lg hover:text-accent-red transition">القائمة</a></li>
+                        <li><a href="#contact" class="hand-text text-ink-light text-lg hover:text-accent-red transition">تواصل معنا</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="sketch-text text-2xl text-ink font-bold mb-4">تابعنا</h4>
+                    <div class="flex gap-3">
+                        <a href="#" class="w-12 h-12 rounded-full border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition">
+                            <i class="fab fa-snapchat"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t-2 border-dashed border-ink/30 pt-8 text-center">
+                <p class="hand-text text-ink-light text-lg">
+                    &copy; 2024 بيتزا بينو. جميع الحقوق محفوظة. | تصميم: <a href="https://tira-dev.github.io/Yamen-Al-Hasan/" target="_blank" class="text-accent-red hover:text-ink transition underline font-bold">يامن الحسن</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const loader = document.getElementById('loader');
+                gsap.to(loader, {
+                    opacity: 0,
+                    duration: 0.6,
+                    ease: 'power2.inOut',
+                    onComplete: function() {
+                        loader.style.display = 'none';
+                        initAnimations();
+                    }
+                });
+            }, 2500);
+        });
+        
+        window.addEventListener('scroll', function() {
+            const scrollProgress = document.getElementById('scrollProgress');
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            scrollProgress.style.width = `${(scrollTop / scrollHeight) * 100}%`;
+        });
+        
+        function animateCounters() {
+            document.querySelectorAll('.counter').forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const increment = target / (duration / 16);
+                let current = 0;
+                
+                const update = () => {
+                    current += increment;
+                    if (current < target) {
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(update);
+                    } else {
+                        counter.textContent = target + '+';
+                    }
+                };
+                update();
+            });
+        }
+        
+        function initAnimations() {
+            animateCounters();
+            gsap.registerPlugin(ScrollTrigger);
+            
+            gsap.utils.toArray('.sketch-card').forEach(card => {
+                gsap.from(card, {
+                    scrollTrigger: { trigger: card, start: 'top 85%' },
+                    y: 40,
+                    opacity: 0,
+                    duration: 0.7,
+                    ease: 'power2.out'
+                });
+            });
+        }
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
